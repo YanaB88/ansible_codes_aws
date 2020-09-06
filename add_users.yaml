@@ -1,0 +1,27 @@
+---
+- name: adding keys from local to remote system
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    list_of_members:
+    - a
+    - b
+  tasks:
+
+    - name: Create list of users on remote system 
+      user:
+        name: "{{ item }}"
+        comment: welcome {{ item }}
+        state: present
+        createhome: yes
+      with_items:
+        "{{ list_of_members }}"
+
+    - name: Copy id_rsa.pub to remote system 
+      authorized_key:
+        user:  "{{ item }}"
+        state: present
+        key:  "{{ lookup('file', '/home/{{item}}/.ssh/id_rsa.pub') }}"
+      with_items:
+        "{{ list_of_members }}"
